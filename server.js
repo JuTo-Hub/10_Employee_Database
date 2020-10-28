@@ -74,7 +74,7 @@ function addDept() {
             },
             function(err) {
                 if (err) throw err;
-                console.log("Your department was created successfully!");
+                console.log("New department was created successfully!");
                 // Re-prompt the user to select a function
                 start();
             }
@@ -89,7 +89,8 @@ function viewDept() {
   })
 }
 // Function to handle adding new roles.
-function addRoles() {
+function addRoles() { 
+  connection.query("SELECT * FROM departments", function(err, departments){
   // Prompt for add role function.
   inquirer
     .prompt([
@@ -113,7 +114,7 @@ function addRoles() {
         name: "department_name",
         type: "list",
         message: "What department does this role belong to?",
-        choices:[]
+        choices: departments.map((d)=>d.dept_name)
       }
     ])
     .then(function(answer) {
@@ -123,19 +124,19 @@ function addRoles() {
         {
           title: answer.title,
           salary: answer.salary,
-          department_name: answer.department_name,
+          department_id: departments.filter((d)=>d.dept_name == answer.department_name)[0].id,
         },
         function(err) {
           if (err) throw err;
-          console.log("Your role was created successfully!");
+          console.log("New role was created successfully!");
           // re-prompt the user to select a function
           start();
         }
       );
     });
-}
+})}
 function viewRoles() {
-  connection.query("SELECT * FROM roles", function(err, data){
+  connection.query("SELECT r.id, r.title, r.salary, d.dept_name, r.department_id FROM roles r INNER JOIN departments d ON r.department_id = d.id", function(err, data){
     if (err) throw err;
     console.table(data);
     start();
@@ -147,4 +148,102 @@ function viewEmployees() {
     console.table(data);
     start();
   })
+}
+function addEmployees() {
+  // Prompt for add role function.
+  inquirer
+    .prompt([
+      {
+        name: "firstName",
+        type: "input",
+        message: "What is the employee's first name?"
+      },
+      {
+        name: "lastName",
+        type: "input",
+        message: "What is the employee's last name?"
+      },
+      {
+        name: "empRole",
+        type: "list",
+        message: "What is this employee's role?",
+        choices: []
+      },
+      {
+        name: "managerName",
+        type: "list",
+        message: "Who is this employee's manager?",
+        choices:[]
+      }
+    ])
+    .then(function(answer) {
+      // When finished prompting, insert a new item into the db with that info
+      connection.query(
+        "INSERT INTO roles SET ?",
+        {
+          first_name: answer.firstName,
+          last_name: answer.lastName,
+          role: answer.empRole,
+          manager_id: answer.managerName,
+        },
+        function(err) {
+          if (err) throw err;
+          console.log("New employee was added successfully!");
+          // re-prompt the user to select a function
+          start();
+        }
+      );
+    });
+}
+function updateEmployees() {
+  // Prompt for add role function.
+  inquirer
+    .prompt([
+      {
+        name: "empSelect",
+        type: "list",
+        message: "Please select the employee to update.",
+        choices: []
+      },
+      {
+        name: "firstName",
+        type: "input",
+        message: "What is the employee's first name?"
+      },
+      {
+        name: "lastName",
+        type: "input",
+        message: "What is the employee's last name?"
+      },
+      {
+        name: "empRole",
+        type: "list",
+        message: "What is this employee's new role?",
+        choices: []
+      },
+      {
+        name: "managerName",
+        type: "list",
+        message: "Who is this employee's new manager?",
+        choices:[]
+      }
+    ])
+    .then(function(answer) {
+      // When finished prompting, insert a new item into the db with that info
+      connection.query(
+        "INSERT INTO employees SET ?",
+        {
+          first_name: answer.firstName,
+          last_name: answer.lastName,
+          role: answer.empRole,
+          manager_id: answer.managerName,
+        },
+        function(err) {
+          if (err) throw err;
+          console.log("The employee profile has been updated successfully!");
+          // re-prompt the user to select a function
+          start();
+        }
+      );
+    });
 }
