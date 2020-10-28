@@ -13,8 +13,9 @@ CREATE TABLE departments (
 -- Create the table role.
 CREATE TABLE roles (
    id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  title VARCHAR(255) NOT NULL,
+  title VARCHAR(30) NOT NULL,
   salary DECIMAL NOT NULL,
+  department_name VARCHAR(30),
   department_id INTEGER NOT NULL, 
   CONSTRAINT fk_departments 
   FOREIGN KEY(department_id) 
@@ -32,5 +33,5 @@ CREATE TABLE employees (
   REFERENCES roles(id),
   CONSTRAINT fk_manager
   FOREIGN KEY(manager_id)
-  REFERENCES employees(id),
+  REFERENCES employees(id)
 );
