@@ -5,7 +5,7 @@ CREATE DATABASE employees_db;
 
 USE employees_db;
 
--- Create the table department.
+-- Create the table departments.
 CREATE TABLE departments (
   id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
   dept_name VARCHAR(30) NOT NULL
@@ -26,7 +26,7 @@ CREATE TABLE employees (
   first_name VARCHAR(30) NOT NULL,
   last_name VARCHAR(30) NOT NULL,
   role_id INTEGER NOT NULL,
-  manager_id INTEGER, 
+  manager_id INTEGER NULL, 
   CONSTRAINT fk_role 
   FOREIGN KEY(role_id)
   REFERENCES roles(id),

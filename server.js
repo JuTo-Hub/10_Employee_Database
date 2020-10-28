@@ -31,7 +31,7 @@ function start() {
       name: "selection",
       type: "list",
       message: "Please select the area you would like to view?",
-      choices: ["Add Departments", "View Departments", "Add Roles", "View Roles", "Add Employees", "View Employees", "Update Employees", "Remove Employee"]
+      choices: ["Add Departments", "View Departments", "Add Roles", "View Roles", "Add Employees", "View Employees", "Update Employees",]
     })
     .then(function(answer) {
       // based on their answer, either call the bid or the post functions
@@ -49,8 +49,6 @@ function start() {
         viewEmployees();
       } else if(answer.selection === "Update Employees") {
         updateEmployees();
-      } else if(answer.selection === "Remove Employees") {
-        removeEmployees();
       } else{
         connection.end();
       }
@@ -111,10 +109,10 @@ function addRoles() {
           }
       },
       {
-        name: "department_name",
+        name: "departmentId",
         type: "list",
         message: "What department does this role belong to?",
-        choices: departments.map((d)=>d.dept_name)
+        choices: departments.map((d)=>{return{name:d.dept_name, value:d.id}})
       }
     ])
     .then(function(answer) {
@@ -124,7 +122,7 @@ function addRoles() {
         {
           title: answer.title,
           salary: answer.salary,
-          department_id: departments.filter((d)=>d.dept_name == answer.department_name)[0].id,
+          department_id: answer.departmentId,
         },
         function(err) {
           if (err) throw err;
@@ -150,6 +148,8 @@ function viewEmployees() {
   })
 }
 function addEmployees() {
+  connection.query("SELECT * FROM roles", function(err, roles){
+    connection.query("SELECT * FROM employees", function(err, employees){
   // Prompt for add role function.
   inquirer
     .prompt([
@@ -164,27 +164,32 @@ function addEmployees() {
         message: "What is the employee's last name?"
       },
       {
-        name: "empRole",
+        name: "roleId",
         type: "list",
         message: "What is this employee's role?",
-        choices: []
+        choices: roles.map((r)=>{return {name:r.title, value:r.id}})
       },
       {
-        name: "managerName",
+        name: "managerId",
         type: "list",
         message: "Who is this employee's manager?",
-        choices:[]
+        choices:[
+          {
+            name:"none", value:null}, 
+            ...employees.map((e)=>{return{name:e.first_name + " " + e.last_name, value: e.id}})
+        ]
       }
     ])
     .then(function(answer) {
       // When finished prompting, insert a new item into the db with that info
       connection.query(
-        "INSERT INTO roles SET ?",
+
+        "INSERT INTO employees SET ?",
         {
           first_name: answer.firstName,
           last_name: answer.lastName,
-          role: answer.empRole,
-          manager_id: answer.managerName,
+          role_id: answer.roleId,
+          manager_id: answer.managerId,
         },
         function(err) {
           if (err) throw err;
@@ -194,8 +199,10 @@ function addEmployees() {
         }
       );
     });
-}
+})})}
 function updateEmployees() {
+  connection.query("SELECT * FROM employees", function(err, employees){
+    connection.query("SELECT * FROM roles", function(err, roles){
   // Prompt for add role function.
   inquirer
     .prompt([
@@ -203,7 +210,7 @@ function updateEmployees() {
         name: "empSelect",
         type: "list",
         message: "Please select the employee to update.",
-        choices: []
+        choices: employees.map((e)=>{return{name:e.first_name + " " + e.last_name, value:e.id}})
       },
       {
         name: "firstName",
@@ -219,25 +226,32 @@ function updateEmployees() {
         name: "empRole",
         type: "list",
         message: "What is this employee's new role?",
-        choices: []
+        choices: roles.map((r)=>{return {name:r.title, value:r.id}})
       },
       {
         name: "managerName",
         type: "list",
         message: "Who is this employee's new manager?",
-        choices:[]
+        choices:[
+          {
+            name:"none", value:null}, 
+            ...employees.map((e)=>{return{name:e.first_name + " " + e.last_name, value: e.id}})
+        ]
       }
     ])
     .then(function(answer) {
       // When finished prompting, insert a new item into the db with that info
       connection.query(
-        "INSERT INTO employees SET ?",
+        "UPDATE employees SET ? WHERE ?",[
         {
           first_name: answer.firstName,
           last_name: answer.lastName,
-          role: answer.empRole,
+          role_id: answer.empRole,
           manager_id: answer.managerName,
         },
+        {
+          id: answer.empSelect,
+        }],
         function(err) {
           if (err) throw err;
           console.log("The employee profile has been updated successfully!");
@@ -246,4 +260,4 @@ function updateEmployees() {
         }
       );
     });
-}
+})})}
