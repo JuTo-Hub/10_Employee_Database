@@ -80,7 +80,7 @@ function addDept() {
     })
 }
 function viewDept() {
-  connection.query("SELECT * FROM departments", function(err, data){
+  connection.query("SELECT * FROM departments RIGHT JOIN roles On roles.department_id = departments.id", function(err, data){
     if (err) throw err;
     console.table(data);
     start();
@@ -141,7 +141,7 @@ function viewRoles() {
   })
 }
 function viewEmployees() {
-  connection.query("SELECT * FROM employees", function(err, data){
+  connection.query("SELECT * FROM employees LEFT JOIN roles ON employees.role_id = roles.id LEFT JOIN departments ON roles.department_id = departments.id", function(err, data){
     if (err) throw err;
     console.table(data);
     start();
